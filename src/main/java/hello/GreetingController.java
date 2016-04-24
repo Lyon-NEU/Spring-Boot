@@ -1,5 +1,8 @@
 package hello;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import java.util.concurrent.atomic.AtomicLong;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,5 +31,13 @@ public class GreetingController {
      	String info=String.format("name: %s age: %s",name,age);
      	return info;
     	//return "Hello, Spirng Boot!"+name;
+    }
+
+    @Autowired
+    private MyBean mybean;
+
+    @RequestMapping("/User")
+    public List<User> getUser(){
+        return mybean.getList();
     }
 }
