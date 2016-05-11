@@ -39,3 +39,43 @@ Spring Boot 是通过调用[Commons Logging](http://commons.apache.org/proper/co
 2014-03-05 10:57:51.698  INFO 45469 --- [ost-startStop-1] o.s.b.c.e.ServletRegistrationBean        : Mapping servlet: 'dispatcherServlet' to [/]
 2014-03-05 10:57:51.702  INFO 45469 --- [ost-startStop-1] o.s.b.c.embedded.FilterRegistrationBean  : Mapping filter: 'hiddenHttpMethodFilter' to:
 ```
+
+## Spring Data JPA
+
+```java
+@Entity
+public class User{
+    @Id
+    @GeneratedValue(strategy=GenerationType.AUTO)
+    private long id;
+    private String firstName;
+    private String lastName;
+
+    protected User(){}
+
+    public User(String firstName,String lastName){
+        this.firstName=fristName;
+        this.lastName=lastName;
+    }
+
+    @Override
+    public String toString(){
+        return String.format(
+                "User[id=%d, firstName='%s', lastName='%s']",
+                id, firstName, lastName);
+    }
+}
+```
++ *id* 作为惟一标识符， `@GeneratedValue(strategy=GenerationType.AUTO)`表明它是一个自增字段
++ *firstName* 与 *lastName* 映射为同名字段
+
+```java
+    import java.util.List;
+
+    import org.springframework.data.repository.CrudRepository;
+
+    public interface UserRespository extends CrudRepository<User,Long>{
+        List<User> findByLastName(String lastName);
+    }
+```
+`CrudRepository` 已经包含了`save`,`delete`,`findOne()`,`findALl()`等预定义方法，可以根据命名约定来扩展。
