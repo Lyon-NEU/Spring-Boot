@@ -16,13 +16,69 @@ spring.datasource.driver-class-name=com.mysql.jdbc.Driver <br>
             <artifactId>spring-jdbc</artifactId>
         </dependency>
 ```
-重新修改为以下配置后，运行正砍
+重新修改为以下配置后，运行正确
 ```
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-jdbc</artifactId>
         </dependency>
 ```
+
+## 日志
+    
+Spring Boot 是通过调用[Commons Logging](http://commons.apache.org/proper/commons-logging/)来实现内部日志功能。用户可根据自身需要来实现底层的接口。默认的配置为`Java Util Logging, Log4J,Log4J2`和`Logback`
+如果选择`Starter POMS`，系统会默认选择Logback
+
+### 日志格式
+
+默认的日志输出格式像下面这样：
+``` log
+2014-03-05 10:57:51.112  INFO 45469 --- [           main] org.apache.catalina.core.StandardEngine  : Starting Servlet Engine: Apache Tomcat/7.0.52
+2014-03-05 10:57:51.253  INFO 45469 --- [ost-startStop-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2014-03-05 10:57:51.253  INFO 45469 --- [ost-startStop-1] o.s.web.context.ContextLoader            : Root WebApplicationContext: initialization completed in 1358 ms
+2014-03-05 10:57:51.698  INFO 45469 --- [ost-startStop-1] o.s.b.c.e.ServletRegistrationBean        : Mapping servlet: 'dispatcherServlet' to [/]
+2014-03-05 10:57:51.702  INFO 45469 --- [ost-startStop-1] o.s.b.c.embedded.FilterRegistrationBean  : Mapping filter: 'hiddenHttpMethodFilter' to:
+```
+
+## Spring Data JPA
+
+```java
+@Entity
+public class User{
+    @Id
+    @GeneratedValue(strategy=GenerationType.AUTO)
+    private long id;
+    private String firstName;
+    private String lastName;
+
+    protected User(){}
+
+    public User(String firstName,String lastName){
+        this.firstName=fristName;
+        this.lastName=lastName;
+    }
+
+    @Override
+    public String toString(){
+        return String.format(
+                "User[id=%d, firstName='%s', lastName='%s']",
+                id, firstName, lastName);
+    }
+}
+```
++ *id* 作为惟一标识符， `@GeneratedValue(strategy=GenerationType.AUTO)`表明它是一个自增字段
++ *firstName* 与 *lastName* 映射为同名字段
+
+```java
+    import java.util.List;
+
+    import org.springframework.data.repository.CrudRepository;
+
+    public interface UserRespository extends CrudRepository<User,Long>{
+        List<User> findByLastName(String lastName);
+    }
+```
+`CrudRepository` 已经包含了`save`,`delete`,`findOne()`,`findALl()`等预定义方法，可以根据命名约定来扩展。
 
 ## 外部配置
 Spring-Boot支持扩展配置，所以可以在不同的环境下运行相同的代码。可以通过 *属性文件*，*YAML*文件和 *环境变量*以及 *命令行参数*来配置。属性值可以通赤`@Value`直接注入组件当中。
@@ -111,3 +167,5 @@ environments.prod.name=My Cool App
         }
     }
 ```
+
+
