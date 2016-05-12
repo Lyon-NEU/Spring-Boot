@@ -1,6 +1,7 @@
 package hello;
 
 import java.util.List;
+import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,4 +41,5 @@ public class GreetingController {
     public List<User> getUser(){
         return mybean.getList();
     }
+
 }
