@@ -168,4 +168,48 @@ environments.prod.name=My Cool App
     }
 ```
 
+## Spring Web MVC   
+Spring Web MVC框架是一个富'model view controller'网页框架，可以通过创建`@Controller`或者`@RestController`组件来处理接收到的HTTP请求。通过使用`@RequestMapping`标记来将controller里的方法映射成HTTP。下面是一个典型的使用`@RestContoller`来解析JSON数据例子：
+```java
+@RestContoller
+@RequestMapping(value="/users")
+public class MyRestController{
 
+    @RequestMapping(value="/{user}",method=RequestMethod.GET)
+    public User getUser(@PathVariable Long user){
+        //...
+    }
+    @RequestMapping(value="/{user}/customers",method=RequestMethod.GET)
+    List<Customer> getUserCustomers(@PathVariabel Long user){
+        //..
+    }
+    @RequestMapping(value="/{user}",method=RequestMethod.DELETE)
+    public User deleteUser(@PathVariable Long user){
+        //...
+    }
+}
+```
+Spring MVC是Spring核心框架的一部分，可以参考官方引用文档。
+
+### Spring MVC自动配置
+
+### HttpMessageConverters
+Spring MVC使用`HttpMessageConverter`接口转换HTTP请求的响应消息，对象可以自动转换为JSON或者XML，字符串默认以UTF-8编码。
+可以通过使用`HttpMessageConverter`类添加或修改：
+```java
+import org.springframework.boot.autoconfigure.web.HttpMessageConveters;
+import org.springframework.boot.context.annotation.*;
+import org.springframework.http.conveter.*;
+
+@Configuration
+public class MyConfiguration{
+
+    @Bean
+    public HttpMessageConverters customConverters(){
+        HttpMessageConverter<?> additional=...
+        HttpMessageConverter<?> another=...
+        return new HttpMessageConverter(additional,another);
+    }
+}
+```
+上下文件中的任何`HttpMessageConverter`组件都会添加到Converter列表中。
