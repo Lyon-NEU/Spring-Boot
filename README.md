@@ -213,3 +213,53 @@ public class MyConfiguration{
 }
 ```
 上下文件中的任何`HttpMessageConverter`组件都会添加到Converter列表中。
+
+##静态内容
+Spring Boot默认会从`/static` (或者`/public`、`/resources`、`/META-INF/resources`)目录加载静态内容。Spring Boot使用Spring MVC里的`ResourceHttpRequestHandler`来实现该功能，所以用户可自己实现`WebMvcConfigurerAdapter`并且重载`addResourceHandlers`方法。
+
+##错误处理
+Spring Boot默认情况下使用`/error`映射来处理错误，它在servelet容器里注册为一个全局的错误页。在电脑客户端，它生成一个JSON格式的信息，包括HTTP状态码和异常信息；在浏览器端它返回一个`Whitelabel`错误视图(可以通过自定义一个视图来解析error)。通过实现`ErrorController`接口可以完全替代它，然后注册一个该类型的bean,或者简单的添加一个`ErrorAttributes`类型的bean。
+
+通过`@ControllerAdvice`可以自定义JSON数据文档:
+
+```java
+@ControllerAdvice(basePackageClasses=FooController.class)
+public class FooControllerAdvice extends ResponseEntityExceptionHandler{
+
+    @ExceptionHandler(YourException.class)
+    @ResponseBody
+    ResponseEntity<?> handleControllerExcepion(HttpServletRequest request,Throwable ex){
+        HttpStatus status=getStatus(request);
+        return new ResponseEntity<>(new CustomErrorType(status.value(),ex.getMessage()),status);
+    }
+
+    private HttpStatus getStatus(HttpServletRequest request){
+        Integer statusCode=(Integer)request.getAttribute("javax.servlet.error.status_code");
+        if(statusCode==null){
+            return HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+        return HttpStatus.valueOf(statusCode);
+    }
+}
+```
+
+上面的例子中，如果 `YourException` 被和`FooController`同一个包下面的controller抛出， a json representation of the `CustomerErrorType` POJO 会替代 `ErrorAttributes` 的表达形式
+
+如果你想更多的特定条件错误，嵌套的servlet容器支持一种均匀的 Java DSL 来自定义 the error handling. Assuming that you have a mapping for /400:
+```java
+@Bean
+public EmbeddedServletContainerCustomizer containerCustomizer(){
+    return new MyCustomizer();
+}
+
+// ...
+
+private static class MyCustomizer implements EmbeddedServletContainerCustomizer {
+
+    @Override
+    public void customize(ConfigurableEmbeddedServletContainer container) {
+        container.addErrorPages(new ErrorPage(HttpStatus.BAD_REQUEST, "/400"));
+    }
+
+}
+```
