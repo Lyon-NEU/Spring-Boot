@@ -217,7 +217,7 @@ public class MyConfiguration{
 ##静态内容
 Spring Boot默认会从`/static` (或者`/public`、`/resources`、`/META-INF/resources`)目录加载静态内容。Spring Boot使用Spring MVC里的`ResourceHttpRequestHandler`来实现该功能，所以用户可自己实现`WebMvcConfigurerAdapter`并且重载`addResourceHandlers`方法。
 
-##错误处理
+## 错误处理
 Spring Boot默认情况下使用`/error`映射来处理错误，它在servelet容器里注册为一个全局的错误页。在电脑客户端，它生成一个JSON格式的信息，包括HTTP状态码和异常信息；在浏览器端它返回一个`Whitelabel`错误视图(可以通过自定义一个视图来解析error)。通过实现`ErrorController`接口可以完全替代它，然后注册一个该类型的bean,或者简单的添加一个`ErrorAttributes`类型的bean。
 
 通过`@ControllerAdvice`可以自定义JSON数据文档:
@@ -261,5 +261,52 @@ private static class MyCustomizer implements EmbeddedServletContainerCustomizer 
         container.addErrorPages(new ErrorPage(HttpStatus.BAD_REQUEST, "/400"));
     }
 
+}
+```
+
+## Testing
+Spring Boot提供了很多有用的测试工具。`spring-boot-starter-test` POM包含Spring Test,JUnit,HamCrest和Mockito依赖。
+
+### Spring应用测试
+依赖注入的一个最主要的优势是可以让你的单元测试代码更简单。可以通过`new`操作符来实例化对象而不需要包含Spring，也可以使用mock 对象而非真实的对象。
+通常你可能不仅需要单元测试或start包含的测试(事实上只是包含`ApplicationContext`)。在布署应用或不需要连接其它基础设备的条件下进行集成测试是非常有用的。
+Spring Framewrok包含了一个详细的集成测试模块，可以直接声明依赖`org.springframework:spring-test`,或使用`spring-boot-starter-test`
+
+### Spring Boot应用测试
+一个Sping Boot应用就是一个Spring `ApplicationContext`,所以几乎不需做任何特殊的操作。
+Spring Boot提供`@SpringApplicationConfiguration`作为标准的`spring-test` `@ContextConfiguration`标记的替代。
+
+```java
+@RunWith(SpringJUnit4ClassRunner.class)
+@SpringApplicationConfiguration(SampleDataJpaApplication.class)
+public calss CityRepositoryIntegrationTests{
+
+    @Autowired
+    CityRepository repository;
+
+    //..
+}
+```
+
+### OutputCaptuer
+`OutputCapture`是JUnit的一个`Rule`,可以用来捕获`System.out`和`System.err`。只需简单的声明captuer为`@Rule`，然后使用`toString()`作为assertions:
+```java
+import org.junit.Rule;
+import org.junit.Test;
+import org.springframework.boot.test.OutputCapture;
+
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
+
+public class MyTest{
+
+    @Rule
+    public OutputCaptuer capture=new OutputCapture();
+
+    @Test
+    public void testName() throws Exception{
+        System.out.println("Hello World!");
+        assertThat(capture.toString(),containString("World"));
+    }
 }
 ```
