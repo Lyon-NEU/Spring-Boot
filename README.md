@@ -310,3 +310,52 @@ public class MyTest{
     }
 }
 ```
+
+### TestRestTemplate
+`TestRestTemplate`是一个Spring `RestTemplate`的一个简单子类，非常方便集成测试。你可以获取一个vanilla模块或者发送基本HTTP认证(用户名和密码)，无论哪种方式，模板都会以一个test-friendly方式：not following redirects(所以你可以assert 响应定位)，忽略cookies，也不会在服务器端抛出异常。
+```java
+public class MyTest{
+
+    RestTemplate template=new TestRestTemplate();
+
+    @Test
+    public void testRequest() throws Exception{
+        HttpHeaders headers=template.getForEntity("http://myhost.com",String.class).getHeaders();
+        assertThat(headers.getLocation().toString(),containsString("myotherhost"));
+    }
+}
+```
+
+## 访问应用参数
+可以通过注入一个`org.springframework.boot.ApplicationArguments` bean来访问传递给`SpringApplication.run(...)`的参数，`ApplicationArguments`接口提供了原始`String[]`参数，也可以使用`option`和`non-option`参数:
+```java
+import org.springframework.boot.*;
+import org.springframework.beans.factory.annotation.*;
+import org.springframework.stereotype.*;
+
+@Component
+public class MyBean{
+
+    @Autowired
+    public MyBean(ApplicationArguments args){
+        boolean debug=args.containsOption("debug");
+        List<String>files=args.getNonOptionArgs();
+        //if run with "--debug logfile.txt" debug=true, files=["logfile.txt"]
+    }
+}
+```
+
+## 23.7 使用ApplicationRunner或CommandLineRunner
+如果在`SpringApplication`启动后需要运行一些代码，可以实现`ApplicationRunner`或者`CommandLineRunner`接口。这两个接口以相同的方式担供一个`run`方法，它会仅在`SpringApplication.run(...)`完成前调用。
+```java
+import org.springframework.boot.*;
+import org.springframework.stereotype.*;
+
+@Component
+public class MyBean implements CommandLineRuuner{
+
+    public void run(String...args){
+        //Do something...
+    }
+}
+```
