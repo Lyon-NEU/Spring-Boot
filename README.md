@@ -359,3 +359,20 @@ public class MyBean implements CommandLineRuuner{
     }
 }
 ```
+
+## 33. 消息
+Spring Framework提供了大量的方法来集成消息系统，可以简单的调用`JmsTemplate`来访问JMS API，也可以自定义异步接收消息。Spring AMQP提供了一个相似的特征集"Advanced Message Queuing Protocal",Spring Boot支持`RabbitTemplate`自动配置选项.
+
+### 33.1 JMS
+`javax.jms.ConnectionFactory`接口定义了一个标准的创建`javax.jms.Connection`的方法，用来同JMS broker交互。尽管Spring需要一个`ConnectionFactory`来使用JMS,但是通常来说你并不需要直接使用，你可以使用更高级的消息抽象来替换。
+
+#### 33.1.1 ActiveMQ 配置
+当在系统路径中检测到ActiveMQ时，Spring Boot就配置一个`ConnectionFactory`。如果代理存在，一个嵌入的代理启动，并且自动配置(除非通过配置来改变代理的URL)
+通过外部属性来对ActiveMQ进行配置，以`spring.activemq.*`的形式，例如，你可以在`application.properties`中按如下定义：
+```java
+spring.activemq.broker-url=tcp://192.168.1.210:9876
+spring.activemq.user=admin;
+spring.activemq.password=secret;
+```
+
+默认情况下，ActiveMQ会自动创建一个目标，如果当前不存在的话。
